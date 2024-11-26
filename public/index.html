@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Visual Comparison</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+      form {
+        max-width: 400px;
+        margin: auto;
+      }
+      label {
+        display: block;
+        margin-top: 10px;
+        font-weight: bold;
+      }
+      input,
+      button {
+        width: 100%;
+        padding: 8px;
+        margin-top: 5px;
+      }
+      button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Visual Comparison Tool</h1>
+    <form id="comparisonForm">
+      <label for="domain1">Domain 1</label>
+      <input type="text" id="domain1" name="domain1" value="https://atdove-rebuild.lando" required />
+
+      <label for="domain2">Domain 2</label>
+      <input type="text" id="domain2" name="domain2" value="https://dev-atdove.pantheonsite.io" required />
+
+      <label for="urlPath">URL Path</label>
+      <input type="text" id="urlPath" name="urlPath" placeholder="/login" required />
+
+      <button type="submit">Run Comparison</button>
+    </form>
+
+    <div id="output"></div>
+
+    <script>
+      document.getElementById("comparisonForm").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const domain1 = document.getElementById("domain1").value;
+        const domain2 = document.getElementById("domain2").value;
+        const urlPath = document.getElementById("urlPath").value;
+
+        document.getElementById("output").innerText = "Running comparison...";
+
+        try {
+          const response = await fetch("/compare", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ domain1, domain2, urlPath }),
+          });
+
+          const result = await response.json();
+          if (result.success) {
+            document.getElementById("output").innerHTML = `
+            <p>Comparison completed.</p>
+            <p>Different pixels: ${result.diffPixels}</p>
+            <p><a href="${result.diffImage}" target="_blank">View diff image</a></p>
+          `;
+          } else {
+            document.getElementById("output").innerText = `Error: ${result.error}`;
+          }
+        } catch (err) {
+          document.getElementById("output").innerText = `Error: ${err.message}`;
+        }
+      });
+    </script>
+  </body>
+</html>
